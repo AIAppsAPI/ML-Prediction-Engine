@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      # Copy config.sample.php to config.php and fill it in before starting.
+      # For Docker, set mlServiceUrl to "http://ml:8750" in config.php.
+      - ./config.php:/app/config.php
+      - ./data:/app/data
+    depends_on:
+      - ml
+  ml:
+    build: ./python
+    volumes:
+      # The Python worker reads datasets and writes trained models in the
+      # same data folder the PHP app uses.
+      - ./data:/app/data
