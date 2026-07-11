@@ -2,7 +2,9 @@
 
 A self-hosted machine learning API: train classifiers, regressors, clusterers, and anomaly detectors on your own data, then call them from anything over HTTPS. PHP serves the API and admin area, a small Python worker runs the actual scikit-learn models, and everything lives in one SQLite file plus plain dataset and model files. No ML expertise needed, pick a model, add rows, click train.
 
-ML Prediction Engine is the open source release of Data Aggregator, the same idea that runs as a hosted app on aiappsapi.com. If you would rather not run your own server, the [Data Aggregator app](https://www.aiappsapi.com/apps/dataaggregator.php) is ready to go.
+ML Prediction Engine is the free open source successor to Data Aggregator, the hosted ML app that ran on aiappsapi.com.
+
+Project page: [ML Prediction Engine on aiappsapi.com](https://www.aiappsapi.com/ML-Prediction-Engine/)
 
 ## What you get
 
