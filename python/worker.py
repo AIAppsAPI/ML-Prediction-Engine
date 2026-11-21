@@ -84,6 +84,13 @@ def parm_float(parm, key, default):
         return default
 
 
+def parm_bool(parm, key, default):
+    value = parm.get(key, default)
+    if isinstance(value, str):
+        return value.strip().lower() not in ("0", "false", "no", "off", "")
+    return bool(value)
+
+
 def parm_layers(parm, key, default):
     layers = parm.get(key, default)
     if isinstance(layers, str):
@@ -100,12 +107,14 @@ def parm_layers(parm, key, default):
 # ---------------------------------------------------------------------------------
 # Builds the estimator for a model class. Returns (estimator, wants_scaler,
 # wants_dense). DBSCAN is not built here, it clusters at predict time.
+# The distance based classes (knn, knnRegressor, kmeans) scale numeric columns
+# only, tf-idf text is already on one scale and scaling it again inflates rare words.
 
 def build_estimator(model_class, parm, data_type):
     text = (data_type == "text")
 
     if model_class == "knn":
-        return KNeighborsClassifier(n_neighbors=parm_int(parm, "k", 5)), False, False
+        return KNeighborsClassifier(n_neighbors=parm_int(parm, "k", 5)), (not text), False
 
     if model_class == "naiveBayes":
         if text:
@@ -147,7 +156,7 @@ def build_estimator(model_class, parm, data_type):
         return Ridge(alpha=parm_float(parm, "alpha", 1.0)), True, False
 
     if model_class == "knnRegressor":
-        return KNeighborsRegressor(n_neighbors=parm_int(parm, "k", 5)), True, False
+        return KNeighborsRegressor(n_neighbors=parm_int(parm, "k", 5)), (not text), False
 
     if model_class == "svr":
         return SVR(C=parm_float(parm, "c", 1.0), epsilon=parm_float(parm, "epsilon", 0.1)), True, False
@@ -168,7 +177,7 @@ def build_estimator(model_class, parm, data_type):
         ), False, False
 
     if model_class == "kmeans":
-        return KMeans(n_clusters=parm_int(parm, "k", 4)), False, False
+        return KMeans(n_clusters=parm_int(parm, "k", 4)), (not text), False
 
     if model_class == "gaussianMixture":
         return GaussianMixture(n_components=parm_int(parm, "k", 4)), False, True
@@ -379,6 +388,10 @@ def op_dbscan(payload):
         X = TfidfVectorizer(max_features=10000).fit_transform(samples)
     else:
         X = build_matrix(samples, "numeric")
+        # Numeric columns are standardized so radius means the same thing on any
+        # data. {"scale": false} keeps raw units, for radius set in real distances.
+        if parm_bool(parm, "scale", True):
+            X = StandardScaler().fit_transform(X)
 
     dbscan = DBSCAN(eps=parm_float(parm, "radius", 0.5), min_samples=parm_int(parm, "minDensity", 5))
     predictions = dbscan.fit_predict(X)

@@ -150,13 +150,13 @@ Set parameters per step as JSON in the admin, each class shows inline help. The 
 | mlpRegressor | regressor | layers, epochs, learningRate, alpha |
 | gradientBoost | regressor | estimators, rate, treeMaxHeight |
 | kmeans | clusterer | k |
-| dbscan | clusterer | radius, minDensity (clusters at predict time, no training) |
+| dbscan | clusterer | radius, minDensity, scale (clusters at predict time, no training) |
 | gaussianMixture | clusterer | k |
 | isolationForest | anomaly | estimators, contamination |
 | localOutlierFactor | anomaly | k, contamination |
 | robustZScore | anomaly | threshold (numeric data only) |
 
-Classifiers and regressors need labeled rows. Clusterers and anomaly detectors train on inputs alone, and anomaly detectors should be trained on normal data only so they can flag anything different. DBSCAN is special: it never trains, it clusters each prediction against its reference dataset on the spot.
+Classifiers and regressors need labeled rows. Clusterers and anomaly detectors train on inputs alone, and anomaly detectors should be trained on normal data only so they can flag anything different. DBSCAN is special: it never trains, it clusters each prediction against its reference dataset on the spot. Numeric columns are standardized for every class that compares sizes or distances, so mixed units can be sent raw. For DBSCAN that means `radius` is measured in standard deviations, set `"scale": false` to keep raw units when the radius is a real distance.
 
 ## Live training
 
